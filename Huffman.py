@@ -4,6 +4,13 @@ import heapq
 class NoHuffman:
     """
     Representa um nó da árvore de Huffman.
+
+    Cada nó pode representar:
+
+        • um símbolo do texto (folha);
+
+        • ou um nó interno, resultante da união de dois nós,
+          contendo apenas a soma das frequências.
     """
 
     def __init__(self, simbolo, frequencia):
@@ -14,14 +21,20 @@ class NoHuffman:
 
     def __lt__(self, outro):
         """
-        Permite comparar nós pela frequência para utilização no heap.
+        Permite comparar nós pela frequência.
+
+        Essa comparação é utilizada automaticamente pela biblioteca
+        heapq para manter a fila de prioridade ordenada.
         """
         return self.frequencia < outro.frequencia
 
 
 def calcular_frequencias(texto):
     """
-    Calcula a frequência de cada símbolo do texto.
+    Calcula a frequência de ocorrência de cada símbolo do texto.
+
+    As frequências são utilizadas para construir a árvore de Huffman,
+    na qual símbolos mais frequentes tendem a receber códigos menores.
 
     Parâmetros:
         texto (str): Texto de entrada.
@@ -42,30 +55,45 @@ def construir_arvore_huffman(frequencias):
     """
     Constrói a árvore de Huffman utilizando uma fila de prioridade.
 
+    Inicialmente, cada símbolo é inserido como um nó folha.
+
+    Em seguida, os dois nós de menor frequência são removidos da fila,
+    combinados em um novo nó pai e inseridos novamente.
+
+    Esse processo continua até restar apenas um nó,
+    que corresponde à raiz da árvore.
+
     Parâmetros:
-        frequencias (dict): Frequência dos símbolos.
+        frequencias (dict):
+            Frequência de ocorrência dos símbolos.
 
     Retorna:
-        NoHuffman: Raiz da árvore.
+        NoHuffman:
+            Raiz da árvore construída.
     """
 
     heap = []
 
+    # Cada símbolo começa como uma folha da árvore.
     for simbolo, frequencia in frequencias.items():
         heapq.heappush(heap, NoHuffman(simbolo, frequencia))
 
     if len(heap) == 1:
         return heap[0]
-
+    
+    # Enquanto existir mais de um nó na fila, continua combinando os dois nós menos frequentes.
     while len(heap) > 1:
 
+        # Remove os dois nós de menor frequência.
         esquerda = heapq.heappop(heap)
         direita = heapq.heappop(heap)
 
+        # Cria um novo nó interno cuja frequência é a soma das frequências dos dois filhos.
         pai = NoHuffman(None, esquerda.frequencia + direita.frequencia)
         pai.esquerda = esquerda
         pai.direita = direita
 
+        # Reinsere o novo nó na fila para participar das próximas combinações.
         heapq.heappush(heap, pai)
 
     return heap[0]
@@ -73,7 +101,17 @@ def construir_arvore_huffman(frequencias):
 
 def gerar_codigos(no, codigo_atual="", codigos=None):
     """
-    Gera os códigos binários percorrendo a árvore.
+    Percorre a árvore de Huffman atribuindo códigos binários
+    a cada símbolo.
+
+    Convenção utilizada:
+
+        esquerda -> 0
+
+        direita -> 1
+
+    O percurso é realizado recursivamente até alcançar
+    todas as folhas da árvore.
 
     Parâmetros:
         no (NoHuffman): Nó atual.
@@ -90,10 +128,12 @@ def gerar_codigos(no, codigo_atual="", codigos=None):
     if no is None:
         return codigos
 
+    # Encontrou uma folha: o código está completo.
     if no.simbolo is not None:
         codigos[no.simbolo] = codigo_atual if codigo_atual else "0"
         return codigos
-
+    
+    # Continua o percurso acrescentando o bit correspondente ao ramo seguido.
     gerar_codigos(no.esquerda, codigo_atual + "0", codigos)
     gerar_codigos(no.direita, codigo_atual + "1", codigos)
 
@@ -109,10 +149,18 @@ def huffman(texto):
 
     Retorna:
         tuple:
-            texto_codificado,
-            codigos,
-            raiz,
-            frequencias
+
+            - str:
+                Texto comprimido.
+
+            - dict:
+                Códigos binários de cada símbolo.
+
+            - NoHuffman:
+                Raiz da árvore.
+
+            - dict:
+                Frequências dos símbolos.
     """
 
     if not texto:
@@ -131,7 +179,16 @@ def huffman(texto):
 
 def huffman_decode(texto_codificado, raiz):
     """
-    Decodifica um texto utilizando a árvore de Huffman.
+    Reconstrói o texto original percorrendo a árvore de Huffman.
+
+    Para cada bit:
+
+        0 -> esquerda
+
+        1 -> direita
+
+    Sempre que uma folha é alcançada, o símbolo correspondente
+    é adicionado ao texto reconstruído e o percurso retorna à raiz.
 
     Parâmetros:
         texto_codificado (str): Texto codificado.
@@ -143,7 +200,8 @@ def huffman_decode(texto_codificado, raiz):
 
     if raiz is None:
         return ""
-
+    
+    # Caso especial: existe apenas um símbolo diferente no texto.
     if raiz.esquerda is None and raiz.direita is None:
         return raiz.simbolo * len(texto_codificado)
 
@@ -153,11 +211,13 @@ def huffman_decode(texto_codificado, raiz):
 
     for bit in texto_codificado:
 
+        # Navega pela árvore conforme o bit lido.
         if bit == "0":
             no = no.esquerda
         else:
             no = no.direita
 
+        # Chegou a uma folha: recupera o símbolo e reinicia o percurso a partir da raiz.
         if no.simbolo is not None:
             resultado.append(no.simbolo)
             no = raiz
@@ -167,7 +227,17 @@ def huffman_decode(texto_codificado, raiz):
 
 def imprimir_arvore(no, nivel=0, lado="Raiz"):
     """
-    Imprime a árvore de Huffman em formato textual.
+    Exibe a árvore de Huffman de forma hierárquica.
+
+    Cada nível representa a profundidade do nó.
+
+    Os ramos são identificados por:
+
+        0 -> esquerda
+
+        1 -> direita
+
+    Função utilizada apenas para visualização e testes.
 
     Parâmetros:
         no (NoHuffman): Nó atual.
@@ -190,7 +260,27 @@ def imprimir_arvore(no, nivel=0, lado="Raiz"):
 
 
 def main():
+    """
+    Executa um exemplo completo do algoritmo de Huffman.
 
+    O programa realiza:
+
+        - leitura do texto;
+
+        - cálculo das frequências;
+
+        - construção da árvore;
+
+        - geração dos códigos;
+
+        - compressão;
+
+        - descompressão;
+
+        - exibição da árvore;
+
+        - comparação dos tamanhos.
+    """
     texto = input("Digite um texto: ")
 
     texto_codificado, codigos, raiz, frequencias = huffman(texto)

@@ -6,16 +6,31 @@ from LZW import lzw, lzw_decode
 from Arithmetic_Coding import arithmetic_coding, arithmetic_decode, estimar_bits
 from Adaptive_Huffman import adaptive_huffman, adaptive_huffman_decode
 
+
+LARGURA_TABELA = 140
+
+
 def calcular_taxa_compressao(tamanho_original, tamanho_comprimido):
     """
-    Calcula a taxa de compressão.
+    Calcula a taxa de compressão obtida por um algoritmo.
+
+    A taxa corresponde ao percentual de redução do tamanho
+    original após a compressão.
+
+    Fórmula utilizada:
+
+        taxa = (1 - comprimido/original) × 100
 
     Parâmetros:
-        tamanho_original (int): Tamanho do texto original.
-        tamanho_comprimido (int): Tamanho após a compressão.
+        tamanho_original (int):
+            Tamanho do texto original.
+
+        tamanho_comprimido (int):
+            Tamanho da representação comprimida.
 
     Retorna:
-        float: Percentual de compressão obtido.
+        float:
+            Percentual de compressão obtido.
     """
 
     if tamanho_original == 0:
@@ -25,13 +40,18 @@ def calcular_taxa_compressao(tamanho_original, tamanho_comprimido):
 
 def classificar_desempenho(taxa):
     """
-    Classifica o desempenho da compressão.
+    Classifica qualitativamente a taxa de compressão.
+
+    A classificação é utilizada apenas para facilitar
+    a interpretação dos resultados apresentados na tabela.
 
     Parâmetros:
-        taxa (float): Taxa de compressão.
+        taxa (float):
+            Taxa de compressão em porcentagem.
 
     Retorna:
-        str: Classificação do desempenho.
+        str:
+            Classificação do desempenho.
     """
 
     if taxa >= 80:
@@ -47,16 +67,30 @@ def classificar_desempenho(taxa):
 
 def comparar_algoritmos(texto):
     """
-    Executa os três algoritmos e exibe uma comparação dos resultados.
+    Executa todos os algoritmos implementados e compara
+    seus resultados para um mesmo texto.
+
+    Para cada algoritmo são calculados:
+
+        - tamanho da representação comprimida;
+
+        - economia obtida;
+
+        - taxa de compressão;
+
+        - classificação do desempenho;
+
+        - validação da descompressão.
 
     Parâmetros:
-        texto (str): Texto de entrada.
+        texto (str):
+            Texto que será utilizado nos testes.
     """
 
-    print("\n" + "=" * 140)
+    print("\n" + "=" * LARGURA_TABELA)
     print("Texto original:")
     print(texto)
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
     caracteres_originais = len(texto)
     bits_originais = caracteres_originais * 8
@@ -232,12 +266,12 @@ def comparar_algoritmos(texto):
     )
 
     # ==========================================================
-    # Tabela
+    # Exibição da tabela comparativa
     # ==========================================================
 
     print("\nTabela Comparativa\n")
 
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
     print(
     f"{'Algoritmo':<22}"
@@ -248,7 +282,7 @@ def comparar_algoritmos(texto):
     f"{'Observação':>22}"
     )
 
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
     print(
         f"{'RLE':<18}"
@@ -304,8 +338,9 @@ def comparar_algoritmos(texto):
         f"{observacao_arithmetic:>22}"
     )
 
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
+    # Verifica se todos os algoritmos reconstruíram exatamente o texto original.
     print("\nValidação das descompressões")
 
     print(f"{'RLE':<18} {texto == rle_decodificado}")
@@ -319,6 +354,10 @@ def executar_bonus():
     """
     Executa automaticamente os testes utilizando
     os textos fornecidos no enunciado.
+
+    Ao final, apresenta um resumo explicando
+    o comportamento de cada algoritmo em
+    diferentes tipos de entrada.
     """
 
     textos = [
@@ -331,9 +370,9 @@ def executar_bonus():
     ]
 
     print("\n")
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
     print("COMPARAÇÃO AUTOMÁTICA DOS TEXTOS DO ENUNCIADO")
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
     for i, texto in enumerate(textos, start=1):
 
@@ -342,9 +381,9 @@ def executar_bonus():
         comparar_algoritmos(texto)
 
     print("\n")
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
     print("RESUMO DOS TESTES")
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
     print("""
         Texto 1 (repetições consecutivas)       
@@ -422,9 +461,14 @@ def executar_bonus():
 def main():
     """
     Programa principal.
+
+    Exibe uma comparação automática utilizando
+    os textos do enunciado e, em seguida,
+    permite que o usuário realize novos testes
+    com textos personalizados.
     """
 
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
     print("COMPARAÇÃO DE ALGORITMOS DE COMPRESSÃO SEM PERDAS")
     print("Run-Length Encoding (RLE)")
     print("Shannon-Fano")
@@ -432,12 +476,12 @@ def main():
     print("Huffman Adaptativo")
     print("LZW")
     print("Arithmetic Coding")
-    print("=" * 140)
+    print("=" * LARGURA_TABELA)
 
-    # Primeiro executa os testes do enunciado
+    # Executa automaticamente os testes previstos no enunciado.
     executar_bonus()
 
-    # Depois permite que o usuário faça testes
+    # Permite que o usuário realize testes personalizados.
     while True:
 
         resposta = input(

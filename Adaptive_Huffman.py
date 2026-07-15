@@ -4,22 +4,38 @@
 
 class NoHuffmanAdaptativo:
     """
-    Representa um nó da árvore do Huffman Adaptativo.
+    Representa um nó da árvore do algoritmo Huffman Adaptativo.
+
+    Um nó pode representar:
+
+        • um símbolo já conhecido pelo algoritmo (folha);
+
+        • um nó interno da árvore;
+
+        • ou o nó NYT (Not Yet Transmitted), utilizado quando um
+          símbolo aparece pela primeira vez durante a compressão.
 
     Atributos:
-        simbolo (str): Símbolo armazenado no nó.
-                       None representa o nó NYT.
+        simbolo (str):
+            Símbolo armazenado no nó.
+            None representa o nó NYT ou um nó interno.
 
-        peso (int): Quantidade de ocorrências do símbolo.
+        peso (int):
+            Quantidade de ocorrências do símbolo ou soma dos pesos
+            dos filhos.
 
-        esquerda: Filho esquerdo do nó.
+        esquerda:
+            Filho esquerdo.
 
-        direita: Filho direito do nó.
+        direita:
+            Filho direito.
 
-        pai: Referência ao nó pai.
+        pai:
+            Referência para o nó pai.
 
-        ordem (int): Número de ordem utilizado na atualização
-                     da árvore.
+        ordem (int):
+            Número de ordem utilizado pelo algoritmo FGK para manter
+            a estrutura correta da árvore durante as atualizações.
     """
 
     def __init__(self, simbolo=None, peso=0, ordem=0):
@@ -41,8 +57,11 @@ class NoHuffmanAdaptativo:
         """
         Verifica se o nó é uma folha.
 
+        Um nó folha é aquele que não possui filhos,
+        representando um símbolo do texto ou o nó NYT.
+
         Retorna:
-            True caso não possua filhos.
+            bool
         """
 
         return (
@@ -56,8 +75,12 @@ class NoHuffmanAdaptativo:
         Verifica se o nó representa o NYT
         (Not Yet Transmitted).
 
-        O NYT é representado por um nó folha
-        sem símbolo e peso zero.
+        O NYT é um nó folha especial utilizado para
+        representar símbolos que ainda não apareceram
+        durante a compressão.
+
+        Retorna:
+            bool
         """
 
         return (
@@ -68,7 +91,17 @@ class NoHuffmanAdaptativo:
     
 class ArvoreAdaptive:
     """
-    Representa toda a árvore do Huffman Adaptativo.
+    Representa a árvore utilizada pelo algoritmo
+    Huffman Adaptativo.
+
+    A árvore mantém uma referência para:
+
+        • a raiz;
+
+        • o nó NYT atual;
+
+        • o próximo número de ordem disponível para
+        novos nós.
     """
 
     def __init__(self):
@@ -88,7 +121,7 @@ def criar_arvore_inicial():
     Cria a árvore inicial do Huffman Adaptativo.
 
     No início da compressão a árvore contém
-    apenas o nó NYT.
+    apenas o nó NYT. Pois, nenhum símbolo foi processado ainda.
 
     Estrutura inicial:
 
@@ -113,7 +146,11 @@ def criar_arvore_inicial():
 
 def buscar_no(no, simbolo):
     """
-    Procura o nó correspondente a um símbolo.
+    Procura recursivamente um símbolo na árvore.
+
+    A busca é realizada em profundidade (DFS),
+    percorrendo primeiro a subárvore esquerda e,
+    em seguida, a direita.
 
     Parâmetros:
         no (NoAdaptive): Nó atual.
@@ -144,8 +181,12 @@ def buscar_no(no, simbolo):
 
 def listar_nos(no, lista=None):
     """
-    Percorre a árvore e retorna uma lista contendo
-    todos os nós.
+    Percorre toda a árvore e retorna uma lista
+    contendo todos os nós.
+
+    Essa lista é utilizada posteriormente pelo
+    algoritmo FGK para localizar candidatos às
+    trocas de posição.
 
     Parâmetros:
         no (NoHuffmanAdaptativo)
@@ -180,6 +221,21 @@ def listar_nos(no, lista=None):
 def eh_ancestral(ancestral, no):
     """
     Verifica se um nó é ancestral de outro.
+
+    A verificação é necessária para impedir trocas
+    inválidas durante a atualização da árvore,
+    evitando que um nó seja trocado com um de seus
+    próprios descendentes.
+
+    Parâmetros:
+        ancestral:
+            Nó que pode ser ancestral.
+
+        no:
+            Nó que será analisado.
+
+    Retorna:
+        bool
     """
 
     atual = no
@@ -201,6 +257,10 @@ def encontrar_maior_ordem(raiz, peso, ignorar):
     """
     Procura o nó de maior ordem que possui
     o mesmo peso.
+
+    Segundo o algoritmo FGK, cada nó deve ser
+    trocado com o líder do bloco de mesmo peso,
+    isto é, o nó de maior número de ordem.
 
     Parâmetros:
         raiz:
@@ -243,10 +303,21 @@ def encontrar_maior_ordem(raiz, peso, ignorar):
     return candidato
 
 def encontrar_no_para_troca(raiz, no):
-
     """
-    Procura o líder do bloco
-    que pode ser trocado.
+    Determina se existe um nó que pode ser trocado
+    com o nó atual durante a atualização FGK.
+
+    O candidato deve:
+
+        • possuir o mesmo peso;
+
+        • ter maior número de ordem;
+
+        • não ser ancestral nem descendente do nó
+        atual.
+
+    Retorna:
+        NoHuffmanAdaptativo ou None.
     """
 
     candidato = encontrar_maior_ordem(
@@ -274,7 +345,14 @@ def trocar_nos(no1, no2):
     Troca a posição de dois nós na árvore.
 
     Apenas os ponteiros dos pais são
-    atualizados.
+    atualizados.    
+
+    A troca altera apenas as referências para os
+    pais dos nós e seus respectivos números de
+    ordem. Os filhos permanecem inalterados.
+
+    Essa operação preserva a estrutura das
+    subárvores.
 
     Parâmetros:
         no1
@@ -327,17 +405,23 @@ def atualizar_arvore(raiz, no):
         3. incrementa o peso;
 
         4. sobe para o pai.
+        
+    Esse processo garante que a árvore continue
+    obedecendo às propriedades do algoritmo FGK
+    após o processamento de cada símbolo.
     """
 
     atual = no
 
+    # Percorre do nó modificado até a raiz, atualizando toda a árvore.
     while atual is not None:        
 
         candidato = encontrar_no_para_troca(
             raiz,
             atual
         )
-        
+
+        # Caso exista um líder do bloco válido, realiza a troca de posições.
         if candidato is not None:
 
             trocar_nos(
@@ -345,8 +429,10 @@ def atualizar_arvore(raiz, no):
                 candidato
             )
 
+        # Atualiza o peso do nó após o processamento do símbolo.
         atual.peso += 1
 
+        # Continua a atualização no nó pai.
         atual = atual.pai
 
 # ============================
@@ -358,6 +444,10 @@ def obter_codigo(no):
     Obtém o código binário correspondente
     ao caminho da raiz até o nó informado.
 
+    Como cada nó possui apenas uma referência para
+    o pai, o percurso é realizado do nó até a raiz,
+    sendo o código invertido ao final.
+
     Convenção:
 
         esquerda -> 0
@@ -367,13 +457,15 @@ def obter_codigo(no):
         no (NoHuffmanAdaptativo)
 
     Retorna:
-        str
+        str:
+            Código binário do símbolo.
     """
 
     codigo = []
 
     atual = no
 
+    # Percorre dos nós folha até a raiz.
     while atual.pai is not None:
 
         if atual == atual.pai.esquerda:
@@ -385,20 +477,27 @@ def obter_codigo(no):
             codigo.append("1")
 
         atual = atual.pai
-
+    
+    # O percurso foi construído de trás para frente, portanto o código precisa ser invertido.
     codigo.reverse()
 
     return "".join(codigo)
 
 def ascii_8_bits(simbolo):
     """
-    Converte um caractere para ASCII em 8 bits.
+    Converte um caractere para sua representação
+    ASCII utilizando exatamente 8 bits.
+
+    Essa representação é utilizada quando um
+    símbolo aparece pela primeira vez durante
+    a compressão.
 
     Parâmetros:
         simbolo (str)
 
     Retorna:
-        str
+        str:
+            Representação binária em 8 bits.
     """
 
     return format(
@@ -408,16 +507,33 @@ def ascii_8_bits(simbolo):
 
 def decodificar_simbolo(arvore, bits, indice):
     """
-    Decodifica um único símbolo da sequência de bits.
+    Decodifica um único símbolo da sequência
+    de bits.
+
+    A função percorre a árvore até encontrar
+    uma folha.
+
+    Caso a folha seja um nó NYT, os próximos
+    8 bits são interpretados como um novo
+    caractere ASCII.
+
+    Parâmetros:
+        arvore (ArvoreAdaptive)
+
+        bits (str)
+
+        indice (int):
+            Posição atual da leitura.
 
     Retorna:
         tuple:
-            (símbolo decodificado, novo índice)
+
+            (símbolo_decodificado, novo_indice)
     """
 
     atual = arvore.raiz
 
-
+    # Percorre a árvore até alcançar uma folha.
     while not atual.eh_folha():
 
         if indice >= len(bits):
@@ -441,7 +557,7 @@ def decodificar_simbolo(arvore, bits, indice):
 
         indice += 1
 
-
+    # Caso seja o nó NYT, os próximos 8 bits representam um novo símbolo ASCII.
     if atual.eh_nyt():
 
         if indice + 8 > len(bits):
@@ -464,7 +580,7 @@ def decodificar_simbolo(arvore, bits, indice):
 
         indice += 8
 
-
+    # Símbolo já conhecido pela árvore.
     else:
 
         simbolo = atual.simbolo
@@ -474,6 +590,7 @@ def decodificar_simbolo(arvore, bits, indice):
         simbolo,
         indice
     )
+
 # ============================
 # Inserção e atualização
 # ============================
@@ -481,6 +598,9 @@ def decodificar_simbolo(arvore, bits, indice):
 def inserir_novo_simbolo(nyt, simbolo, proxima_ordem):
     """
     Insere um novo símbolo na árvore.
+    O antigo nó NYT passa a ser um nó interno,
+    enquanto um novo NYT é criado como filho
+    esquerdo.
 
     O nó NYT deixa de ser folha e passa a possuir
     dois filhos:
@@ -493,6 +613,7 @@ def inserir_novo_simbolo(nyt, simbolo, proxima_ordem):
             (novo_no_simbolo, novo_nyt)
     """
 
+    # Cria o novo nó NYT e o novo símbolo, preservando a numeração de ordem.
     novo_nyt = NoHuffmanAdaptativo(
         simbolo=None,
         peso=0,
@@ -523,6 +644,11 @@ def inserir_simbolo(arvore, simbolo):
     """
     Processa um símbolo durante a compressão.
 
+    Essa função representa a principal etapa da
+    compressão adaptativa, pois decide se o
+    símbolo já faz parte da árvore ou se deve
+    ser inserido pela primeira vez.
+
     Se o símbolo já existir na árvore:
 
         • emite seu código atual;
@@ -545,6 +671,7 @@ def inserir_simbolo(arvore, simbolo):
             Sequência de bits produzida.
     """
 
+    # Procura o símbolo na árvore atual.
     no = buscar_no(
         arvore.raiz,
         simbolo
@@ -565,6 +692,7 @@ def inserir_simbolo(arvore, simbolo):
             no
         )
 
+        # Retorna apenas o código do símbolo, pois ele já está presente na árvore.
         return codigo
 
     # -----------------------------------
@@ -579,6 +707,7 @@ def inserir_simbolo(arvore, simbolo):
         simbolo
     )
 
+    # O novo símbolo passa a ocupar a posição à direita do antigo nó NYT.
     novo_no, novo_nyt = inserir_novo_simbolo(
         arvore.nyt,
         simbolo,
@@ -589,6 +718,7 @@ def inserir_simbolo(arvore, simbolo):
 
     arvore.proxima_ordem -= 2
 
+    # Atualiza a árvore após a inserção do símbolo.
     atualizar_arvore(
         arvore.raiz,
         novo_no
@@ -602,10 +732,21 @@ def inserir_simbolo(arvore, simbolo):
 
 def atualizar_simbolo_decodificado(arvore, simbolo):
     """
-    Atualiza a árvore após receber
-    um símbolo durante a decodificação.
+    Atualiza a árvore durante a decodificação.
+
+    Após recuperar um símbolo da sequência de bits,
+    a árvore precisa sofrer exatamente as mesmas
+    modificações realizadas durante a compressão,
+    garantindo que codificador e decodificador
+    permaneçam sincronizados.
+
+    Parâmetros:
+        arvore (ArvoreAdaptive)
+
+        simbolo (str)
     """
 
+    # Verifica se o símbolo já existe na árvore.
     no = buscar_no(
         arvore.raiz,
         simbolo
@@ -620,7 +761,7 @@ def atualizar_simbolo_decodificado(arvore, simbolo):
 
         return
 
-
+    # O símbolo ainda não existe: cria um novo nó e atualiza a árvore.
     novo_no, novo_nyt = inserir_novo_simbolo(
         arvore.nyt,
         simbolo,
@@ -642,14 +783,34 @@ def atualizar_simbolo_decodificado(arvore, simbolo):
 
 def adaptive_huffman(texto):
     """
-    Realiza a compressão utilizando
+    Comprime um texto utilizando o algoritmo
     Huffman Adaptativo.
+
+    Os símbolos são processados um a um e, após
+    cada símbolo, a árvore é atualizada conforme
+    o algoritmo FGK.
+
+    Parâmetros:
+        texto (str):
+            Texto original.
+
+    Retorna:
+        tuple:
+
+            - str:
+                Sequência de bits produzida.
+
+            - ArvoreAdaptive:
+                Árvore final após o processamento
+                de todo o texto.
     """
 
+    # Inicializa a árvore contendo apenas o nó NYT.
     arvore = ArvoreAdaptive()
 
     bits_saida = []
 
+    # Processa cada símbolo do texto de forma sequencial.
     for simbolo in texto:
 
         bits_saida.append(
@@ -668,6 +829,19 @@ def adaptive_huffman_decode(bits):
     """
     Reconstrói o texto original a partir da sequência
     de bits produzida pelo Huffman Adaptativo.
+
+    Durante a decodificação, a árvore é reconstruída
+    dinamicamente da mesma forma que ocorreu na
+    compressão, garantindo a sincronização entre
+    codificador e decodificador.
+
+    Parâmetros:
+        bits (str):
+            Sequência de bits comprimida.
+
+    Retorna:
+        str:
+            Texto reconstruído.
     """
 
     arvore = ArvoreAdaptive()
@@ -676,7 +850,7 @@ def adaptive_huffman_decode(bits):
 
     texto = []
 
-
+    # Processa todos os bits até reconstruir completamente o texto original.
     while indice < len(bits):
 
         simbolo, indice = decodificar_simbolo(
@@ -688,7 +862,7 @@ def adaptive_huffman_decode(bits):
 
         texto.append(simbolo)
 
-
+        # Atualiza a árvore exatamente como ocorreu durante a compressão.
         atualizar_simbolo_decodificado(
             arvore,
             simbolo
@@ -704,31 +878,34 @@ def adaptive_huffman_decode(bits):
 
 def imprimir_arvore(no, nivel=0):
     """
-    Exibe a árvore de forma hierárquica.
+    Exibe a árvore em formato hierárquico.
 
-    Utilizada apenas para testes.
+    Função utilizada apenas para visualização e
+    depuração do algoritmo, facilitando o entendimento
+    da estrutura construída durante a compressão.
 
     Parâmetros:
         no:
             Nó atual.
 
         nivel:
-            Profundidade do nó.
+            Profundidade do nó na árvore.
     """
 
     if no is None:
         return
 
-
+    # Define a indentação de acordo com a profundidade do nó.
     espaco = "   " * nivel
 
-
+    # Nó NYT.
     if no.eh_nyt():
 
         print(
             espaco + "NYT"
         )
 
+    # Nó folha contendo um símbolo.
     elif no.simbolo is not None:
 
         print(
@@ -737,6 +914,7 @@ def imprimir_arvore(no, nivel=0):
             f"(peso={no.peso})"
         )
 
+    # Nó interno.
     else:
 
         print(
@@ -758,6 +936,8 @@ def imprimir_arvore(no, nivel=0):
 def tamanho_arvore(no):
     """
     Calcula a quantidade de nós da árvore.
+    O cálculo é realizado recursivamente,
+    percorrendo todos os nós da árvore.
 
     Parâmetros:
         no:
@@ -772,7 +952,7 @@ def tamanho_arvore(no):
 
         return 0
 
-
+    # Conta o nó atual e todos os nós das subárvores esquerda e direita.
     return (
         1
         +
@@ -783,17 +963,38 @@ def tamanho_arvore(no):
 
 
 def main():
+    """
+    Executa um exemplo completo do algoritmo
+    Huffman Adaptativo.
+
+    O programa realiza:
+
+        - leitura do texto;
+
+        - compressão;
+
+        - descompressão;
+
+        - exibição da sequência de bits;
+
+        - impressão da árvore final;
+
+        - validação da reconstrução.
+    """
 
     texto = input("Digite um texto: ")
 
+    # Compressão
     bits, arvore = adaptive_huffman(
         texto
     )
 
+    # Descompressão
     texto_reconstruido = adaptive_huffman_decode(
         bits
     )
 
+    # Exibição dos resultados
     print("\nBits produzidos:\n")
     print(bits)
 

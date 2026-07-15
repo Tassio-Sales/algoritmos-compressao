@@ -2,22 +2,23 @@ def rle(texto):
     """
     Comprime uma string utilizando o algoritmo Run-Length Encoding (RLE).
 
-    O algoritmo substitui sequências consecutivas de caracteres
-    pelo número de repetições seguido do caractere.
+    O algoritmo substitui sequências consecutivas de caracteres iguais
+    pelo número de ocorrências seguido do caractere.
 
     Exemplo:
         "AAAABBCCDAA" -> "4A2B2C1D2A"
 
     Parâmetros:
-        texto (str): Texto original.
+        texto (str):
+            Texto original a ser comprimido.
 
     Retorna:
-        str: Texto comprimido.
+        str:
+            Texto comprimido.
 
-    Observação:
-    Cada sequência consecutiva de caracteres iguais é representada
-    pelo número de ocorrências seguido do caractere.
-    
+    Complexidade:
+        Tempo: O(n), pois o texto é percorrido uma única vez.
+        Espaço: O(n), devido à construção da saída.
     """
 
     if not texto:
@@ -48,14 +49,23 @@ def rle_decode(texto):
     """
     Descomprime uma string codificada com Run-Length Encoding (RLE).
 
+    O algoritmo interpreta cada sequência numérica encontrada como
+    a quantidade de repetições do caractere seguinte.
+
     Exemplo:
         "4A2B2C1D2A" -> "AAAABBCCDAA"
 
     Parâmetros:
-        texto (str): Texto comprimido.
+        texto (str):
+            Texto comprimido no formato quantidade + caractere.
 
     Retorna:
-        str: Texto original.
+        str:
+            Texto original reconstruído.
+
+    Complexidade:
+        Tempo: O(n)
+        Espaço: O(n)
     """
 
     if not texto:
@@ -65,7 +75,8 @@ def rle_decode(texto):
     quantidade = ""
 
     for caractere in texto:
-
+        
+        # Acumula todos os dígitos para permitir quantidades maiores que 9
         if caractere.isdigit():
             quantidade += caractere
         else:
@@ -77,7 +88,11 @@ def rle_decode(texto):
 
 def main():
     """
-    Executa um exemplo de compressão e descompressão utilizando RLE.
+    Executa o programa principal do algoritmo RLE.
+
+    Permite ao usuário informar um texto,
+    realiza a compressão, descompressão e apresenta
+    as métricas de tamanho e taxa de compressão.
     """
 
     texto = input("Digite um texto: ")
@@ -91,6 +106,8 @@ def main():
     print(f"Texto descomprimido : {texto_descomprimido}")
 
     print("\n========== TAMANHOS ==========")
+
+    # Considera cada caractere representado por 8 bits (ASCII)
     bits_originais = len(texto) * 8
     bits_comprimidos = len(texto_comprimido) * 8
     bits_economizados = bits_originais - bits_comprimidos

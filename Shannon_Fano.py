@@ -1,12 +1,18 @@
 def calcular_frequencias(texto):
     """
-    Calcula a frequência de cada símbolo do texto.
+    Calcula a frequência de ocorrência de cada símbolo no texto.
+
+    A frequência dos símbolos é utilizada pelo algoritmo Shannon-Fano
+    para determinar quais caracteres receberão códigos binários menores.
 
     Parâmetros:
-        texto (str): Texto de entrada.
+        texto (str):
+            Texto de entrada.
 
     Retorna:
-        dict: Dicionário contendo as frequências dos símbolos.
+        dict:
+            Dicionário no formato:
+            {símbolo: quantidade_de_ocorrências}.
     """
 
     frequencias = {}
@@ -19,16 +25,25 @@ def calcular_frequencias(texto):
 
 def dividir_simbolos(simbolos):
     """
-    Divide a lista de símbolos em dois grupos com soma das frequências
-    o mais equilibrada possível.
+    Divide os símbolos em dois grupos com frequências totais
+    aproximadamente iguais.
+
+    Essa divisão é a etapa principal do Shannon-Fano:
+    após ordenar os símbolos por frequência, o algoritmo divide
+    recursivamente a lista tentando manter as somas dos grupos
+    equilibradas.
 
     Parâmetros:
-        simbolos (list): Lista de tuplas (símbolo, frequência).
+        simbolos (list):
+            Lista de tuplas no formato:
+            [(símbolo, frequência), ...]
 
     Retorna:
-        tuple: Dois grupos de símbolos.
+        tuple:
+            Dois grupos resultantes da divisão.
     """
 
+    # Soma total das frequências para encontrar o ponto de divisão mais equilibrado.    
     total = sum(freq for _, freq in simbolos)
 
     soma = 0
@@ -39,6 +54,7 @@ def dividir_simbolos(simbolos):
 
         soma += simbolos[i][1]
 
+        # Calcula a diferença entre os dois grupos. Quanto menor a diferença, mais equilibrada é a divisão.
         diferenca = abs(total - 2 * soma)
 
         if diferenca < menor_diferenca:
@@ -53,24 +69,39 @@ def dividir_simbolos(simbolos):
 
 def construir_codigos(simbolos, codigos, codigo_atual=""):
     """
-    Constrói recursivamente os códigos de Shannon-Fano.
+    Gera os códigos binários dos símbolos através da divisão
+    recursiva característica do Shannon-Fano.
+
+    A cada divisão:
+        - grupo esquerdo recebe o bit 0;
+        - grupo direito recebe o bit 1.
+
+    O processo continua até que cada símbolo possua
+    seu próprio código.
 
     Parâmetros:
-        simbolos (list): Lista de tuplas (símbolo, frequência).
-        codigos (dict): Dicionário onde serão armazenados os códigos.
-        codigo_atual (str): Código parcial construído até o momento.
+        simbolos (list):
+            Lista de símbolos e suas frequências.
+
+        codigos (dict):
+            Estrutura onde os códigos finais serão armazenados.
+
+        codigo_atual (str):
+            Código parcial construído durante a recursão.
     """
 
     if len(simbolos) == 1:
         simbolo = simbolos[0][0]
         codigos[simbolo] = codigo_atual if codigo_atual else "0"
         return
-
+    
+    # Divide o conjunto atual para atribuir novos bits aos grupos resultantes.
     esquerda, direita = dividir_simbolos(simbolos)
 
+    # Símbolos do grupo esquerdo recebem o bit 0.
     construir_codigos(esquerda, codigos, codigo_atual + "0")
     
-    # Continua a divisão recursiva apenas se existir um grupo à direita.
+    # Símbolos do grupo direito recebem o bit 1.
     if direita:
         construir_codigos(direita, codigos, codigo_atual + "1")
 
@@ -84,9 +115,14 @@ def shannon_fano(texto):
 
     Retorna:
         tuple:
-            - texto_codificado (str)
-            - codigos (dict)
-            - frequencias (dict)
+            - str:
+                Sequência de bits resultante da compressão.
+
+            - dict:
+                Tabela contendo o código binário de cada símbolo.
+
+            - dict:
+                Frequência de ocorrência dos símbolos.
     """
 
     if not texto:
@@ -111,6 +147,9 @@ def shannon_fano(texto):
 def shannon_fano_decode(texto_codificado, codigos):
     """
     Decodifica um texto comprimido utilizando os códigos de Shannon-Fano.
+
+    A decodificação percorre a sequência de bits acumulando símbolos
+    até encontrar uma sequência existente na tabela de códigos.
 
     Parâmetros:
         texto_codificado (str): Texto em bits.
@@ -143,7 +182,18 @@ def shannon_fano_decode(texto_codificado, codigos):
 
 
 def main():
+    """
+    Executa um exemplo completo do Shannon-Fano.
 
+    O programa realiza:
+        - leitura do texto original;
+        - cálculo das frequências;
+        - geração dos códigos;
+        - compressão;
+        - descompressão;
+        - comparação dos tamanhos.
+    """
+    
     texto = input("Digite um texto: ")
 
     texto_codificado, codigos, frequencias = shannon_fano(texto)
