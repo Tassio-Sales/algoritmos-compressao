@@ -110,10 +110,8 @@ def comparar_algoritmos(texto):
     )
 
     economia_rle = caracteres_originais - caracteres_rle
-    if economia_rle >= 0:
-        economia_rle_texto = f"{economia_rle} caracteres"
-    else:
-        economia_rle_texto = f"{economia_rle} caracteres"
+
+    economia_rle_texto = f"{economia_rle} caracteres"
 
     observacao_rle = classificar_desempenho(taxa_rle)
     
@@ -134,10 +132,9 @@ def comparar_algoritmos(texto):
     )
 
     economia_sf = bits_originais - bits_sf
-    if economia_sf >= 0:
-        economia_sf_texto = f"{economia_sf} bits"
-    else:
-        economia_sf_texto = f"{economia_sf} bits"
+
+    economia_sf_texto = f"{economia_sf} bits"
+
     observacao_sf = classificar_desempenho(taxa_sf)
 
     # ==========================================================
@@ -159,10 +156,9 @@ def comparar_algoritmos(texto):
     )
 
     economia_hf = bits_originais - bits_hf
-    if economia_hf >= 0:
-        economia_hf_texto = f"{economia_hf} bits"
-    else:
-        economia_hf_texto = f"{economia_hf} bits"
+
+    economia_hf_texto = f"{economia_hf} bits"
+
     observacao_hf = classificar_desempenho(taxa_hf)
 
     # ==========================================================
@@ -184,10 +180,7 @@ def comparar_algoritmos(texto):
 
     economia_ah = bits_originais - bits_ah
 
-    if economia_ah >= 0:
-        economia_ah_texto = f"{economia_ah} bits"
-    else:
-        economia_ah_texto = f"{economia_ah} bits"
+    economia_ah_texto = f"{economia_ah} bits"
 
     observacao_ah = classificar_desempenho(
         taxa_ah
